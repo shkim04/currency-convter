@@ -14,10 +14,14 @@ export default function Converter() {
     const [targetCurr, setTargetCurr] = useState("")
     
     useEffect(() => {
-        let currenciesSet = Object.keys(currencies)
-        setCurr(currenciesSet);
-        setInputCurr(currenciesSet[0]);
-        setTargetCurr(currenciesSet[0]);
+        console.log("changed detected")
+        let currency = Object.keys(currencies)
+        let priorityCurr = currency.filter(el => { return el === "KRW" || el === "EUR" || el === "USD"})
+        let restCurr =currency.filter(el => { return el !== priorityCurr.includes(el)})
+        let currencyOptions = [...priorityCurr, "--", ...restCurr];
+        setCurr(currencyOptions);
+        setInputCurr(currencyOptions[0]);
+        setTargetCurr(currencyOptions[1]);
     }, [])
 
     function convertCurrency() {
@@ -42,6 +46,11 @@ export default function Converter() {
         setTargetCurr(e.target.value)
     }
 
+    function exchangeCurr() {
+        setInputCurr(targetCurr)
+        setTargetCurr(inputCurr)
+    }
+
     return (
         <div className="converter-container">
             <div id="input-amount" className="part-divider">
@@ -61,7 +70,9 @@ export default function Converter() {
                         })
                     }
                 </select>
-                <span>To</span>
+                <button className="exchange-currencies" onClick={exchangeCurr}>
+                    <i className="fas fa-exchange-alt"></i>
+                </button>
                 <select id="target-currency" value={targetCurr} onChange={targetCurrHandler}>
                     {
                         curr.map((targetCurr, index) => {
@@ -77,7 +88,7 @@ export default function Converter() {
             </div>
             <div className="output-display part-divider">{result}</div>
             <button 
-                className="part-divider" 
+                className="convert part-divider" 
                 onClick={convertCurrency}
             >
                 Convert
