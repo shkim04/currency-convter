@@ -6,66 +6,68 @@ let year = today.getFullYear();
 let month = today.getMonth() + 1;
 let date = today.getDate();
 
+let currency = Object.keys(currencies)
+let priorityCurr = currency.filter(el => { return el === "KRW" || el === "EUR" || el === "USD"})
+let restCurr = currency.filter(el => { return el !== priorityCurr.includes(el)})
+let currencyOptions = [...priorityCurr, "-------", ...restCurr];
+
 export default function Converter() {
-    const [curr, setCurr] = useState([])
-    const [input, setInput] = useState("")
+    const [curr, setCurr] = useState(currencyOptions)
+    const [amount, setAmount] = useState("1")
     const [result, setResult] = useState("")
-    const [inputCurr, setInputCurr] = useState("")
-    const [targetCurr, setTargetCurr] = useState("")
+    const [fromCurr, setFromCurr] = useState(currencyOptions[0])
+    const [toCurr, setToCurr] = useState(currencyOptions[1])
     
-    useEffect(() => {
-        console.log("changed detected")
-        let currency = Object.keys(currencies)
-        let priorityCurr = currency.filter(el => { return el === "KRW" || el === "EUR" || el === "USD"})
-        let restCurr =currency.filter(el => { return el !== priorityCurr.includes(el)})
-        let currencyOptions = [...priorityCurr, "--", ...restCurr];
-        setCurr(currencyOptions);
-        setInputCurr(currencyOptions[0]);
-        setTargetCurr(currencyOptions[1]);
-    }, [])
+    console.log(amount, fromCurr, toCurr);
 
-    function convertCurrency() {
-        const converted = async () => {
-            let convertedAmount = await convert(parseInt(input), inputCurr, targetCurr, `${year}-${month}-${date}`);
-            setResult(convertedAmount.toFixed(2).toString())
+    useEffect(async() => {
+        try {
+            let convertedAmount = await convert(parseInt(amount), fromCurr, toCurr, `${year}-${month}-${date}`);
+            if(amount === "") {
+                setResult("")
+            } else {
+                setResult(convertedAmount.toFixed(2).toString())
+            }
         }
-        converted();
+        catch(error) {
+            console.log(error)
+        }
+    }, [amount, fromCurr, toCurr])
+
+    function amountHanlder(e) {
+        setAmount(e.target.value)
     }
 
-    function inputHanlder(e) {
-        setInput(e.target.value)
-    }
-
-    function inputCurrHandler(e) {
+    function fromCurrHandler(e) {
         e.preventDefault();
-        setInputCurr(e.target.value)
+        setFromCurr(e.target.value)
     }
 
-    function targetCurrHandler(e) {
+    function toCurrHandler(e) {
         e.preventDefault();
-        setTargetCurr(e.target.value)
+        setToCurr(e.target.value)
     }
 
     function exchangeCurr() {
-        setInputCurr(targetCurr)
-        setTargetCurr(inputCurr)
+        setFromCurr(toCurr)
+        setToCurr(fromCurr)
     }
 
     return (
         <div className="converter-container">
             <div id="input-amount" className="part-divider">
                 <span className="label">Amount: </span>
-                <input className="input-value" onChange={inputHanlder} />
+                <input className="input-value" value={amount} onChange={amountHanlder} />
             </div>
             <div id="currency" className="part-divider">
-                <select id="input-currency" value={inputCurr} onChange={inputCurrHandler}>
+                <select id="from-currency" value={fromCurr} onChange={fromCurrHandler}>
                     {
-                        curr.map((inputCurr, index) => {
+                        curr.map((fromCurr, index) => {
                             return <option 
                                         key={index} 
-                                        value={inputCurr}
+                                        value={fromCurr}
                                     >
-                                        {inputCurr}
+                                        {fromCurr}
                                     </option>
                         })
                     }
@@ -73,26 +75,20 @@ export default function Converter() {
                 <button className="exchange-currencies" onClick={exchangeCurr}>
                     <i className="fas fa-exchange-alt"></i>
                 </button>
-                <select id="target-currency" value={targetCurr} onChange={targetCurrHandler}>
+                <select id="to-currency" value={toCurr} onChange={toCurrHandler}>
                     {
-                        curr.map((targetCurr, index) => {
+                        curr.map((toCurr, index) => {
                             return <option 
                                         key={index} 
-                                        value={targetCurr}
+                                        value={toCurr}
                                     >
-                                        {targetCurr}
+                                        {toCurr}
                                     </option>
                         })
                     }
                 </select>
             </div>
             <div className="output-display part-divider">{result}</div>
-            <button 
-                className="convert part-divider" 
-                onClick={convertCurrency}
-            >
-                Convert
-            </button>
         </div>
     )
 }
