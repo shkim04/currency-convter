@@ -1,3 +1,3 @@
 # Currency-converter
 
-self update -test2
+self update -test3
